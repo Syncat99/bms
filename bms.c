@@ -103,10 +103,11 @@ void add_client(client **first_client, client **last_client) {
     scanf("%s", (*last_client) -> profession);
     (*last_client) -> id_client = generate_id();
     getchar();
+    putchar('\n');
     center("id du client : ", cols);
-    printf("%d", (*last_client) -> id_client);
+    printf("#%d", (*last_client) -> id_client);
     fflush(stdout);
-    sleep(3);
+    sleep(6);
 }
 void *search_client_id(client *first_client, int id) {
     client *ptr = malloc(sizeof(client));
