@@ -46,6 +46,9 @@ void center(const char *text, int cols) {
     if (cols < 70) {
         margin = cols / 4;
     }
+    if (cols < 50) {
+        margin = cols / 4 - 5;
+    }
     
     for (int i = 0; i < margin; i++) {
         putchar(' ');
@@ -244,6 +247,41 @@ void modify(client *first_client, int id, int choice) {
 
 }
 
+void read_clients(client **first_client, client **last_client, FILE* fd) {
+    int cols;
+    terminal_size(&cols);
+    client *ptr = malloc(sizeof(client));
+    *first_client = ptr;
+    (*last_client) = *first_client;
+    (*last_client) -> next_client = NULL;
+    
+    while ((fscanf(fd, "%[^,], %[^,], %[^,], %[^,], %d\n", (*last_client) -> last_name, (*last_client) -> first_name, (*last_client) -> phone_num, (*last_client) -> profession, &((*last_client) -> id_client))) > 0) {
+        (*last_client) -> next_client = malloc(sizeof(client));
+        (*last_client) = (*last_client) -> next_client;
+        // printf("%s %s %s %s %d", (*last_client) -> last_name, (*last_client) -> first_name, (*last_client) -> phone_num, (*last_client) -> profession, ((*last_client) -> id_client));
+        fflush(stdout);
+    }
+    
+    free((*last_client) -> next_client);
+    (*last_client) -> next_client = NULL;
+    
+}
+void clients_list(client *first_client) {
+    client *ptr;
+    ptr = first_client;
+    while (ptr != NULL) {
+        printf("%s ", ptr -> last_name);
+        fflush(stdout);
+        sleep(3);
+        ptr = ptr -> next_client;
+    }
+}
+void save_client(client *head, FILE* fd) {
+    client *curr = head;
+    for (; curr != NULL; curr = curr -> next_client) {
+        fprintf(fd, "%s, %s, %s, %s, %d\n", curr -> last_name, curr -> first_name, curr -> phone_num, curr -> profession, curr -> id_client);
+    }
+}
 void main() {
     int cols;
     terminal_size(&cols);
@@ -252,8 +290,12 @@ void main() {
     account *last_account = NULL;
     client *head_client = NULL;
     client *last_client = NULL;
-    
+    FILE* fd_a = fopen("save.txt", "a");
+    FILE* fd_r = fopen("save.txt", "r");
+    read_clients(&head_client, &last_client, fd_r);
+    // clients_list(head_client);
     start :
+        save_client(head_client, fd_a);
         menu(1);
         do {
             input = getchar() - '0';
@@ -279,6 +321,7 @@ void main() {
                 switch (input) {
                     case 1 :
                             add_client(&head_client, &last_client); // ajout client
+                            
                             goto start;
                             break;
                     case 2 :
@@ -291,18 +334,30 @@ void main() {
                             {   
                                 system("clear");
                                 int inp;
-                                center("=========================", cols);
-                                center("[1] - recherche par ID \n", cols);
-                                center("[2] - recherche par nom \n", cols);
+                                center("=========================\n\n", cols);
+                                center(" [1] - recherche par ID \n\n", cols);
+                                center(" [2] - recherche par nom \n\n", cols);
+                                center("=========================\n\n", cols);
+                                center("> ", cols);
+
                                 do {
                                     inp = getchar() - '0';
                                 } while (inp < 1 || inp > 2);
+                                putchar('\n');
                                 switch(inp) {
                                     case 1 : {
                                             center("ID du client : ", cols);
                                             int id;
                                             scanf("%d", &id);
                                             client *ptr = (client*)search_client_id(head_client, id);// rechercher client
+                                            if (ptr == NULL) {
+                                                putchar('\n');
+                                                center("Client introuvable.\n", cols);
+                                                fflush(stdout);
+                                                sleep(5);
+                                                goto start;
+                                            }
+                                            putchar('\n');
                                             center("Nom :", cols);
                                             printf("%s\n", ptr -> last_name);
                                             center("Prenom : ", cols);
@@ -311,6 +366,7 @@ void main() {
                                             printf("%s\n", ptr -> phone_num);
                                             center("Profession : ", cols);
                                             printf("%s\n", ptr -> profession);
+
                                             sleep(8);
                                             getchar();
                                             goto start;
@@ -327,6 +383,7 @@ void main() {
                                                 sleep(3);
                                                 goto start;
                                             }
+                                            putchar('\n');
                                             center("Nom : ", cols);
                                             printf("%s\n", ptr -> last_name);
                                             center("Prenom : ", cols);
@@ -335,6 +392,8 @@ void main() {
                                             printf("%s\n", ptr -> phone_num);
                                             center("Profession : ", cols);
                                             printf("%s\n", ptr -> profession);
+                                            center("ID du client : ", cols);
+                                            printf("#%d\n", ptr -> id_client);
                                             sleep(8);
                                             getchar();
                                             goto start;
@@ -414,4 +473,6 @@ void main() {
                 p_exit(3);
                 break;
         }
+    fclose(fd_r);
+    fclose(fd_a);
 }
