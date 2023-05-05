@@ -81,8 +81,9 @@ typedef struct account {
 void add_client(client **first_client, client **last_client) {
     int cols;
     terminal_size(&cols);
-    client *ptr = malloc(sizeof(client));
+    client *ptr;
     if (*first_client == NULL) {
+        ptr = malloc(sizeof(client));
         *first_client = ptr;
         (*last_client) = *first_client;
         (*last_client) -> next_client = NULL;
@@ -126,6 +127,7 @@ void *search_client_id(client *first_client, int id) {
     }
     return NULL;
 }
+
 void *search_client_last_name(client *first_client, const char *l_name) {
     client *ptr = malloc(sizeof(client));
     if (first_client == NULL) {
@@ -137,6 +139,21 @@ void *search_client_last_name(client *first_client, const char *l_name) {
     }
     if ((strcmp(ptr->last_name, l_name) == 0)) {
         return ptr;
+    }
+    return 0;
+}
+
+int search_bool(client *first_client, const char *l_name, const char *f_name) {
+    client *ptr;
+    if (first_client == NULL) {
+        return 0;
+    }
+    ptr = first_client;
+    while (ptr != NULL) {
+        if ((strcmp(ptr->last_name, l_name) == 0) && (strcmp(ptr->first_name, f_name) == 0)) {
+            return 1;
+        }
+        ptr = ptr -> next_client;
     }
     return 0;
 }
@@ -247,24 +264,27 @@ void modify(client *first_client, int id, int choice) {
 
 }
 
-void read_clients(client **first_client, client **last_client, FILE* fd) {
+void read_clients(client **first_client, client **last_client) {
     int cols;
     terminal_size(&cols);
+    FILE* fd_r = fopen("save.txt", "r");
+    if ((fd_r == NULL)) {
+        return;
+    }
     client *ptr = malloc(sizeof(client));
     *first_client = ptr;
-    (*last_client) = *first_client;
+    (*last_client) = (*first_client);
     (*last_client) -> next_client = NULL;
     
-    while ((fscanf(fd, "%[^,], %[^,], %[^,], %[^,], %d\n", (*last_client) -> last_name, (*last_client) -> first_name, (*last_client) -> phone_num, (*last_client) -> profession, &((*last_client) -> id_client))) > 0) {
+    while ((fscanf(fd_r, "%[^,], %[^,], %[^,], %[^,], %d\n", (*last_client) -> last_name, (*last_client) -> first_name, (*last_client) -> phone_num, (*last_client) -> profession, &((*last_client) -> id_client))) > 0) {
         (*last_client) -> next_client = malloc(sizeof(client));
         (*last_client) = (*last_client) -> next_client;
         // printf("%s %s %s %s %d", (*last_client) -> last_name, (*last_client) -> first_name, (*last_client) -> phone_num, (*last_client) -> profession, ((*last_client) -> id_client));
-        fflush(stdout);
     }
     
     free((*last_client) -> next_client);
     (*last_client) -> next_client = NULL;
-    
+    fclose(fd_r);
 }
 void clients_list(client *first_client) {
     client *ptr;
@@ -276,11 +296,13 @@ void clients_list(client *first_client) {
         ptr = ptr -> next_client;
     }
 }
-void save_client(client *head, FILE* fd) {
+void save_client(client *head) {
     client *curr = head;
+    FILE* fd_w = fopen("save.txt", "w");
     for (; curr != NULL; curr = curr -> next_client) {
-        fprintf(fd, "%s, %s, %s, %s, %d\n", curr -> last_name, curr -> first_name, curr -> phone_num, curr -> profession, curr -> id_client);
+        fprintf(fd_w, "%s, %s, %s, %s, %d\n", curr -> last_name, curr -> first_name, curr -> phone_num, curr -> profession, curr -> id_client);
     }
+    fclose(fd_w);
 }
 void main() {
     int cols;
@@ -290,12 +312,10 @@ void main() {
     account *last_account = NULL;
     client *head_client = NULL;
     client *last_client = NULL;
-    FILE* fd_a = fopen("save.txt", "a");
-    FILE* fd_r = fopen("save.txt", "r");
-    read_clients(&head_client, &last_client, fd_r);
+    read_clients(&head_client, &last_client);
     // clients_list(head_client);
+    
     start :
-        save_client(head_client, fd_a);
         menu(1);
         do {
             input = getchar() - '0';
@@ -405,7 +425,8 @@ void main() {
                         putchar('\n');
                         goto start;
                         break;
-                    case 6 : 
+                    case 6 :
+                        save_client(head_client);
                         p_exit(3);
                 }
                 break;
@@ -439,6 +460,7 @@ void main() {
                         goto start;
                         break;
                     case 6 : 
+                        save_client(head_client);
                         p_exit(3);
                 }
 
@@ -466,13 +488,17 @@ void main() {
                         goto start;
                         break;
                     case 4 : 
+                        save_client(head_client);
                         p_exit(3);
                 }
                 break;
             case 4 : 
+                save_client(head_client);
                 p_exit(3);
                 break;
         }
-    fclose(fd_r);
-    fclose(fd_a);
 }
+
+
+
+
