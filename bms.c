@@ -78,48 +78,45 @@ typedef struct account {
     c_date creation_date;
     struct account *next_account;
 }account;
-void add_client(client **first_client, client **last_client) {
+void add_client(client **first_client) {
     int cols;
     terminal_size(&cols);
-    client *ptr;
+    client *last_client;
+    client *ptr = malloc(sizeof(client));
     if (*first_client == NULL) {
-        ptr = malloc(sizeof(client));
         *first_client = ptr;
-        (*last_client) = *first_client;
-        (*last_client) -> next_client = NULL;
+        (last_client) = *first_client;
+        (last_client) -> next_client = NULL;
     }
     else {
-        ptr = *first_client;
-        while (ptr -> next_client != NULL) {
-            ptr = ptr -> next_client;
-        }
-        (*last_client) -> next_client = ptr;
-        (*last_client) = ptr;
-        (*last_client) -> next_client = NULL;
+        for (last_client = *first_client; (last_client -> next_client) != NULL; last_client = last_client -> next_client);
+        last_client -> next_client = ptr;
+        last_client = ptr;
+        last_client -> next_client = NULL;
     }
     center("Nom : ", cols);
-    scanf("%s", (*last_client) -> last_name);
+    scanf("%s", (last_client) -> last_name);
     center("Prenom : ", cols);
-    scanf("%s", (*last_client) -> first_name);
+    scanf("%s", (last_client) -> first_name);
     center("Numero de telephone : ", cols);
-    scanf("%s", (*last_client) -> phone_num);
+    scanf("%s", (last_client) -> phone_num);
     center("Profession : ", cols);
-    scanf("%s", (*last_client) -> profession);
-    (*last_client) -> id_client = generate_id();
+    scanf("%s", (last_client) -> profession);
+    (last_client) -> id_client = generate_id();
     getchar();
     putchar('\n');
     center("id du client : ", cols);
-    printf("#%d", (*last_client) -> id_client);
+    printf("#%d", (last_client) -> id_client);
     fflush(stdout);
-    sleep(6);
+    sleep(2);
 }
 void *search_client_id(client *first_client, int id) {
-    client *ptr = malloc(sizeof(client));
+    client *ptr;
     if (first_client == NULL) {
         return NULL;
     }
     ptr = first_client;
-    while ((ptr -> id_client) != id) {
+    while ((ptr -> id_client) != id && (ptr -> next_client) != NULL) {
         ptr = ptr -> next_client;
     }
     if (ptr -> id_client == id) {
@@ -142,7 +139,16 @@ void *search_client_last_name(client *first_client, const char *l_name) {
     }
     return 0;
 }
-
+void delete_last_client(client **head) {
+    client *ptr = *head;
+    client *last_client;
+    while(ptr -> next_client != NULL) {
+        last_client = ptr;
+        ptr = ptr -> next_client;
+    }
+    free(ptr);
+    last_client -> next_client = NULL;
+}
 int search_bool(client *first_client, const char *l_name, const char *f_name) {
     client *ptr;
     if (first_client == NULL) {
@@ -226,64 +232,67 @@ void menu(int menu_number) {
     }
 }
 
-void modify(client *first_client, int id, int choice) {
+void modify_client(client **first_client, int id, int choice) {
     int cols, inp;
     terminal_size(&cols);
-    client *ptr = (client*)search_client_id(first_client, id);
-    if (ptr == NULL) {
-        return;
+    client *ptr = *first_client;
+    while (ptr -> id_client != id) {
+        ptr = ptr -> next_client;
     }
-    switch(choice) {
-        case 1 : {
-            center("Nouveau nom : ", cols);
-            scanf("%s", ptr -> last_name);
-            getchar();
-            break;
-        }
-        case 2 : {
-            center("Nouveau prenom : ", cols);
-            scanf("%s", ptr -> first_name);
-            getchar();
-            break;
-        }
-        case 3 : {
-            center("Profession : ", cols);
-            scanf("%s", ptr -> profession);
-            getchar();
-            break;
-        }
-        case 4 : {
-            center("Nouveau numero : ", cols);
-            scanf("%s", ptr -> phone_num);
-            getchar();
-            break;
-        }
-        default :
-            break;
+    if ((ptr -> id_client) == id) {   
+            switch(choice) {
+                case 1 : {
+                    center("Nouveau nom : ", cols);
+                    scanf("%s", ptr -> last_name);
+                    getchar();
+                    break;
+                }
+                case 2 : {
+                    center("Nouveau prenom : ", cols);
+                    scanf("%s", ptr -> first_name);
+                    getchar();
+                    break;
+                }
+                case 3 : {
+                    center("Nouveau numero : ", cols);
+                    scanf("%s", ptr -> phone_num);
+                    getchar();
+                    break;
+                }
+                case 4 : {
+                    center("Profession : ", cols);
+                    scanf("%s", ptr -> profession);
+                    getchar();
+                    break;
+                }
+                default :
+                    break;
+            }
     }
-
+    else {
+        center("Client introuvable.\n", cols);
+    }
 }
 
-void read_clients(client **first_client, client **last_client) {
+void read_clients(client **first_client) {
     int cols;
     terminal_size(&cols);
+    int number_of_clients;
     FILE* fd_r = fopen("save.txt", "r");
-    if ((fd_r == NULL)) {
-        return;
-    }
     client *ptr = malloc(sizeof(client));
+    client *last_client;
     *first_client = ptr;
-    (*last_client) = (*first_client);
-    (*last_client) -> next_client = NULL;
-    
-    while ((fscanf(fd_r, "%[^,], %[^,], %[^,], %[^,], %d\n", (*last_client) -> last_name, (*last_client) -> first_name, (*last_client) -> phone_num, (*last_client) -> profession, &((*last_client) -> id_client))) > 0) {
-        (*last_client) -> next_client = malloc(sizeof(client));
-        (*last_client) = (*last_client) -> next_client;
+    (last_client) = (*first_client);
+    (last_client) -> next_client = NULL;
+    fscanf(fd_r, "%d\n", &number_of_clients);
+    while ((fscanf(fd_r, "%[^,], %[^,], %[^,], %[^,], %d\n", (last_client) -> last_name, (last_client) -> first_name, (last_client) -> phone_num, (last_client) -> profession, &((last_client) -> id_client))) > 0) {
+        (last_client) -> next_client = malloc(sizeof(client));
+        (last_client) = (last_client) -> next_client;
+        (last_client) -> next_client = NULL;
         // printf("%s %s %s %s %d", (*last_client) -> last_name, (*last_client) -> first_name, (*last_client) -> phone_num, (*last_client) -> profession, ((*last_client) -> id_client));
     }
+    delete_last_client(first_client);
     
-    free((*last_client) -> next_client);
-    (*last_client) -> next_client = NULL;
     fclose(fd_r);
 }
 void clients_list(client *first_client) {
@@ -309,10 +318,8 @@ void main() {
     terminal_size(&cols);
     int input;
     account *head_account = NULL;
-    account *last_account = NULL;
     client *head_client = NULL;
-    client *last_client = NULL;
-    read_clients(&head_client, &last_client);
+    read_clients(&head_client);
     // clients_list(head_client);
     
     start :
@@ -340,13 +347,28 @@ void main() {
                 }while(input < 1 || input > 6);
                 switch (input) {
                     case 1 :
-                            add_client(&head_client, &last_client); // ajout client
+                            add_client(&head_client); // ajout client
                             
                             goto start;
                             break;
                     case 2 :
-                            // modifier client
-                            break;
+                            {   
+                                int input, choix;
+                                system("clear");
+                                center("ID du client : ", cols);
+                                scanf("%d", &input);
+                                getchar();
+                                center("1 - Nom\n", cols);
+                                center("2 - Prenom\n", cols);
+                                center("3 - Numero\n", cols);
+                                center("4 - Profession\n", cols);
+                                center("> ", cols);
+                                scanf("%d", &choix);
+                                getchar();
+                                modify_client(&head_client, input, choix);// modifier client
+                                goto start;
+                                break;
+                            }
                     case 3 :
                             // supprimer client
                             break;
@@ -369,12 +391,13 @@ void main() {
                                             center("ID du client : ", cols);
                                             int id;
                                             scanf("%d", &id);
+                                            getchar();
                                             client *ptr = (client*)search_client_id(head_client, id);// rechercher client
                                             if (ptr == NULL) {
                                                 putchar('\n');
                                                 center("Client introuvable.\n", cols);
                                                 fflush(stdout);
-                                                sleep(5);
+                                                sleep(3);
                                                 goto start;
                                             }
                                             putchar('\n');
@@ -395,6 +418,7 @@ void main() {
                                             center("Nom du client : ", cols);
                                             char lname[50];
                                             scanf("%s", lname);
+                                            getchar();
                                             client *ptr = (client*)search_client_last_name(head_client, lname);// rechercher client
                                             if (ptr == NULL) {
                                                 putchar('\n');
