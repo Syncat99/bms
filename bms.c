@@ -96,7 +96,6 @@ void main() {
                                             printf("%s\n", ptr -> phone_num);
                                             center("Profession : ", cols);
                                             printf("%s\n", ptr -> profession);
-
                                             sleep(8);
                                             goto start;
                                     }
@@ -126,6 +125,7 @@ void main() {
                                             printf("#%d\n", ptr -> id_client);
                                             sleep(8);
                                             getchar();
+                                            free(ptr);
                                             goto start;
                                     }
                                 }
@@ -171,6 +171,8 @@ void main() {
                         break;
                     case 6 : 
                         save_client(head_client);
+                        
+            
                         p_exit(3);
                 }
 
@@ -199,11 +201,15 @@ void main() {
                         break;
                     case 4 : 
                         save_client(head_client);
+                        
+            
                         p_exit(3);
                 }
                 break;
             case 4 : 
                 save_client(head_client);
+                
+    
                 p_exit(3);
                 break;
         }
