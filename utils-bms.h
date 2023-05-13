@@ -276,14 +276,11 @@ void modify_client(client **first_client, int id, int choice) {
 void read_clients(client **first_client) {
     int cols;
     terminal_size(&cols);
-    int number_of_clients;
     FILE* fd_r = fopen("save.txt", "r");
-    client *ptr = malloc(sizeof(client));
+    *first_client = malloc(sizeof(client));
     client *last_client;
-    *first_client = ptr;
     (last_client) = (*first_client);
     (last_client) -> next_client = NULL;
-    fscanf(fd_r, "%d\n", &number_of_clients);
     while ((fscanf(fd_r, "%[^,], %[^,], %[^,], %[^,], %d\n", (last_client) -> last_name, (last_client) -> first_name, (last_client) -> phone_num, (last_client) -> profession, &((last_client) -> id_client))) > 0) {
         (last_client) -> next_client = malloc(sizeof(client));
         (last_client) = (last_client) -> next_client;
@@ -291,7 +288,6 @@ void read_clients(client **first_client) {
         // printf("%s %s %s %s %d", (*last_client) -> last_name, (*last_client) -> first_name, (*last_client) -> phone_num, (*last_client) -> profession, ((*last_client) -> id_client));
     }
     delete_last_client(first_client);
-    
     fclose(fd_r);
 }
 void clients_list(client *first_client) {
@@ -311,4 +307,22 @@ void save_client(client *head) {
         fprintf(fd_w, "%s, %s, %s, %s, %d\n", curr -> last_name, curr -> first_name, curr -> phone_num, curr -> profession, curr -> id_client);
     }
     fclose(fd_w);
+}
+void free_all(client **client_start, account **account_start) {
+    client *ptr = *client_start;
+    client *lastc = ptr;
+    account *ptr1 = *account_start;
+    account *lasta = ptr1;
+
+    while(ptr != NULL) {
+        lastc = ptr -> next_client;
+        free(ptr);
+        ptr = lastc;
+    }
+    while(ptr1 != NULL) {
+        lasta = ptr1 -> next_account;
+        free(ptr1);
+        ptr1 = lasta;
+    }
+
 }
