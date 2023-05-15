@@ -60,7 +60,13 @@ typedef struct creation_date {
     int month;
     int year;
 }c_date;
-
+void actual_time(c_date *date) {
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    (date -> year) = (int)tm.tm_year + 1900;
+    (date -> month) = (int)tm.tm_mon + 1;
+    (date -> day) = (int)tm.tm_mday;
+}
 typedef struct client {
     char last_name[50];
     char first_name[50];
@@ -68,27 +74,35 @@ typedef struct client {
     char profession[50];
     int id_client;
     struct client *next_client;
-
 }client;
 typedef struct account {
     int id_account;
     int id_client;
     int balance;
-    c_date creation_date;
+    c_date date;
     struct account *next_account;
 }account;
 void add_client(client **first_client) {
+    static int id = 0;
     int cols;
     terminal_size(&cols);
     client *last_client;
-    client *ptr = malloc(sizeof(client));
+    client *ptr = *first_client;
     if (*first_client == NULL) {
-        *first_client = ptr;
+        printf("YES");
+        id++;
+        *first_client = malloc(sizeof(client));
         (last_client) = *first_client;
         (last_client) -> next_client = NULL;
     }
     else {
-        for (last_client = *first_client; (last_client -> next_client) != NULL; last_client = last_client -> next_client);
+        id++;
+        while (ptr != NULL) {
+            last_client = ptr;
+            ptr = ptr -> next_client;
+            id++;
+        }
+        ptr = malloc(sizeof(client));
         last_client -> next_client = ptr;
         last_client = ptr;
         last_client -> next_client = NULL;
@@ -101,7 +115,7 @@ void add_client(client **first_client) {
     scanf("%s", (last_client) -> phone_num);
     center("Profession : ", cols);
     scanf("%s", (last_client) -> profession);
-    (last_client) -> id_client = generate_id();
+    (last_client) -> id_client = id;
     getchar();
     putchar('\n');
     center("id du client : ", cols);
@@ -147,6 +161,20 @@ void delete_last_client(client **head) {
     }
     free(ptr);
     last_client -> next_client = NULL;
+}
+void delete_client(client **head, int id) {
+    client *ptr = *head;
+    client *last_client;
+    while (ptr != NULL) {
+        if (ptr -> id_client == id) {
+            last_client -> next_client = ptr -> next_client;
+            free(ptr);
+            return;
+        }
+        last_client = ptr;
+        ptr = ptr -> next_client;
+    }
+
 }
 int search_bool(client *first_client, const char *l_name, const char *f_name) {
     client *ptr;
@@ -275,16 +303,24 @@ void modify_client(client **first_client, int id, int choice) {
 
 void read_clients(client **first_client) {
     int cols;
+    static int num, i = 0;
     terminal_size(&cols);
     FILE* fd_r = fopen("save.txt", "r");
+    if (fd_r == NULL) {
+        fprintf(stderr, "Can't open saving file");
+    }
     *first_client = malloc(sizeof(client));
-    client *last_client;
-    (last_client) = (*first_client);
+    client *last_client = *first_client;
     (last_client) -> next_client = NULL;
-    while ((fscanf(fd_r, "%[^,], %[^,], %[^,], %[^,], %d\n", (last_client) -> last_name, (last_client) -> first_name, (last_client) -> phone_num, (last_client) -> profession, &((last_client) -> id_client))) > 0) {
+    while (num = (fscanf(fd_r, "%[^,], %[^,], %[^,], %[^,], %d\n", (last_client) -> last_name, (last_client) -> first_name, (last_client) -> phone_num, (last_client) -> profession, &((last_client) -> id_client))) > 0) {
+        if (num <= 0 && i == 0) {
+            free(last_client);
+            return;
+        }
         (last_client) -> next_client = malloc(sizeof(client));
         (last_client) = (last_client) -> next_client;
         (last_client) -> next_client = NULL;
+        i++;
         // printf("%s %s %s %s %d", (*last_client) -> last_name, (*last_client) -> first_name, (*last_client) -> phone_num, (*last_client) -> profession, ((*last_client) -> id_client));
     }
     delete_last_client(first_client);
@@ -326,3 +362,50 @@ void free_all(client **client_start, account **account_start) {
     }
 
 }
+
+void add_account(account **head_a, client *head_c) {
+    int cols;
+    terminal_size(&cols);
+    int inp;
+    account *ptr = *head_a;
+    account *last_account;
+    if (*head_a == NULL) {
+        *head_a = malloc(sizeof(account));
+        last_account = *head_a;
+        last_account -> next_account = NULL;
+    }
+    else {
+        while (ptr != NULL) {            
+            last_account = ptr;
+            ptr = ptr -> next_account;
+        }
+        ptr = malloc(sizeof(account));
+        last_account -> next_account = ptr;
+        last_account = ptr;
+        last_account -> next_account = NULL;
+    }
+
+
+
+
+
+    center("id du client : ", cols);
+    scanf("%d", &inp);
+    getchar();
+    client *check = (client*)(search_client_id(head_c, inp));
+    if (check == NULL) {
+        center("Creation de compte impossible, client introuvable.", cols);
+        return;
+    }
+    last_account -> id_client = check -> id_client;
+    center("Solde de base : ", cols);
+    scanf("%d", &(last_account -> balance)); 
+    getchar();
+    putchar('\n');
+    actual_time(&(last_account -> date));
+    putchar('\n');
+}
+
+
+
+

@@ -34,7 +34,7 @@ void main() {
                 }while(input < 1 || input > 6);
                 switch (input) {
                     case 1 :
-                            add_client(&head_client); // ajout client
+                            add_client(&head_client);                           // ajout client
                             
                             goto start;
                             break;
@@ -52,13 +52,20 @@ void main() {
                                 center("> ", cols);
                                 scanf("%d", &choix);
                                 getchar();
-                                modify_client(&head_client, input, choix);// modifier client
+                                modify_client(&head_client, input, choix);      // modifier client
                                 goto start;
                                 break;
                             }
-                    case 3 :
-                            // supprimer client
-                            break;
+                    case 3 :    
+                            {
+                                int inp;
+                                center("id du client :  ", cols);
+                                scanf("%d", &inp);
+                                getchar();
+                                delete_client(&head_client, inp);             // supprimer client
+                                goto start;
+                                break;
+                            }
                     case 4 :
                             {   
                                 system("clear");
@@ -123,9 +130,7 @@ void main() {
                                             printf("%s\n", ptr -> profession);
                                             center("ID du client : ", cols);
                                             printf("#%d\n", ptr -> id_client);
-                                            sleep(8);
-                                            getchar();
-                                            free(ptr);
+                                            sleep(5);
                                             goto start;
                                     }
                                 }
@@ -137,6 +142,7 @@ void main() {
                         break;
                     case 6 :
                         save_client(head_client);
+                        free_all(&head_client, &head_account);
                         p_exit(3);
                 }
                 break;
@@ -153,13 +159,27 @@ void main() {
                 }while(input < 1 || input > 6);
                 switch (input) {
                     case 1 :
-                            // ajout client
+                            add_account(&head_account, head_client);// ajout compte
+                            goto start;
                             break;
-                    case 2 :
-                            // modifier client
+                    case 2 :{
+                            account *ptr = head_account;// modifier compte
+                            while (ptr != NULL) {
+                                putchar('\n');
+                                center("id_client : #", cols);
+                                printf("%d\n", ptr -> id_client);
+                                center("date de creation : ", cols);
+                                printf("%02d/%02d/%4d\n", ptr -> date.day, ptr -> date.month, ptr -> date.year);
+                                center("Solde actuel : ", cols);
+                                printf("%d\n", ptr -> balance);
+                                ptr = ptr -> next_account;
+                            }
+                            sleep(4);
+                            goto start;
                             break;
+                            }
                     case 3 :
-                            // supprimer client
+                            // supprimer compte
                             break;
                     case 4 :
                             {
@@ -173,6 +193,7 @@ void main() {
                         save_client(head_client);
                         
             
+                        free_all(&head_client, &head_account);
                         p_exit(3);
                 }
 
@@ -203,6 +224,7 @@ void main() {
                         save_client(head_client);
                         
             
+                        free_all(&head_client, &head_account);
                         p_exit(3);
                 }
                 break;
@@ -210,6 +232,7 @@ void main() {
                 save_client(head_client);
                 
     
+                free_all(&head_client, &head_account);
                 p_exit(3);
                 break;
         }
