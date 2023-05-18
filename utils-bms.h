@@ -313,14 +313,9 @@ void read_clients(client **first_client) {
     client *last_client = *first_client;
     (last_client) -> next_client = NULL;
     while (num = (fscanf(fd_r, "%[^,], %[^,], %[^,], %[^,], %d\n", (last_client) -> last_name, (last_client) -> first_name, (last_client) -> phone_num, (last_client) -> profession, &((last_client) -> id_client))) > 0) {
-        if (num <= 0 && i == 0) {
-            free(last_client);
-            return;
-        }
-        (last_client) -> next_client = malloc(sizeof(client));
         (last_client) = (last_client) -> next_client;
         (last_client) -> next_client = NULL;
-        i++;
+        (last_client) = malloc(sizeof(client));
         // printf("%s %s %s %s %d", (*last_client) -> last_name, (*last_client) -> first_name, (*last_client) -> phone_num, (*last_client) -> profession, ((*last_client) -> id_client));
     }
     delete_last_client(first_client);
