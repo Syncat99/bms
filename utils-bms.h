@@ -89,19 +89,24 @@ void add_client(client **first_client) {
     client *last_client;
     client *ptr = *first_client;
     if (*first_client == NULL) {
-        printf("YES");
         id++;
         *first_client = malloc(sizeof(client));
         (last_client) = *first_client;
         (last_client) -> next_client = NULL;
     }
     else {
-        id++;
+        if (id == 0) {
+            while (ptr != NULL) {
+                ptr = ptr -> next_client;
+                id++;
+            }
+            ptr = *first_client;
+        }
         while (ptr != NULL) {
             last_client = ptr;
             ptr = ptr -> next_client;
-            id++;
         }
+        id++;
         ptr = malloc(sizeof(client));
         last_client -> next_client = ptr;
         last_client = ptr;
@@ -154,13 +159,18 @@ void *search_client_last_name(client *first_client, const char *l_name) {
 }
 void delete_last_client(client **head) {
     client *ptr = *head;
-    client *last_client;
+    client *last_client = NULL;
     while(ptr -> next_client != NULL) {
         last_client = ptr;
         ptr = ptr -> next_client;
     }
+    if (last_client == NULL) {
+        *head = NULL;
+    }
+    else {
+        last_client -> next_client = NULL;
+    }
     free(ptr);
-    last_client -> next_client = NULL;
 }
 void delete_client(client **head, int id) {
     client *ptr = *head;
@@ -311,11 +321,12 @@ void read_clients(client **first_client) {
     }
     *first_client = malloc(sizeof(client));
     client *last_client = *first_client;
+    client buff;
     (last_client) -> next_client = NULL;
-    while (num = (fscanf(fd_r, "%[^,], %[^,], %[^,], %[^,], %d\n", (last_client) -> last_name, (last_client) -> first_name, (last_client) -> phone_num, (last_client) -> profession, &((last_client) -> id_client))) > 0) {
-        (last_client) = (last_client) -> next_client;
+    while (fscanf(fd_r, "%[^,], %[^,], %[^,], %[^,], %d\n", (last_client) -> last_name, (last_client) -> first_name, (last_client) -> phone_num, (last_client) -> profession, &((last_client) -> id_client)) > 0) {
+        (last_client) -> next_client = malloc(sizeof(client));
+        (last_client) = last_client -> next_client;
         (last_client) -> next_client = NULL;
-        (last_client) = malloc(sizeof(client));
         // printf("%s %s %s %s %d", (*last_client) -> last_name, (*last_client) -> first_name, (*last_client) -> phone_num, (*last_client) -> profession, ((*last_client) -> id_client));
     }
     delete_last_client(first_client);
@@ -335,7 +346,7 @@ void save_client(client *head) {
     client *curr = head;
     FILE* fd_w = fopen("save.txt", "w");
     for (; curr != NULL; curr = curr -> next_client) {
-        fprintf(fd_w, "%s, %s, %s, %s, %d\n", curr -> last_name, curr -> first_name, curr -> phone_num, curr -> profession, curr -> id_client);
+        fprintf(fd_w, "%s, %s, %s, %s, %05d\n", curr -> last_name, curr -> first_name, curr -> phone_num, curr -> profession, curr -> id_client);
     }
     fclose(fd_w);
 }
