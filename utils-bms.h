@@ -82,6 +82,7 @@ typedef struct account {
     c_date date;
     struct account *next_account;
 }account;
+
 void add_client(client **first_client) {
     static int id = 0;
     int cols;
