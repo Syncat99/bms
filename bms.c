@@ -7,6 +7,7 @@ void main() {
     account *head_account = NULL;
     client *head_client = NULL;
     read_clients(&head_client);
+    read_accounts(&head_account);
     // clients_list(head_client);
     
     start :
@@ -70,15 +71,16 @@ void main() {
                             {   
                                 system("clear");
                                 int inp;
-                                center("=========================\n\n", cols);
+                                center("===========================\n\n", cols);
                                 center(" [1] - recherche par ID \n\n", cols);
                                 center(" [2] - recherche par nom \n\n", cols);
-                                center("=========================\n\n", cols);
+                                center(" [3] - Revenir au Menu principal\n\n", cols);
+                                center("===========================\n\n", cols);
                                 center("> ", cols);
 
                                 do {
                                     inp = getchar() - '0';
-                                } while (inp < 1 || inp > 2);
+                                } while (inp < 1 || inp > 3);
                                 putchar('\n');
                                 switch(inp) {
                                     case 1 : {
@@ -133,6 +135,11 @@ void main() {
                                             sleep(5);
                                             goto start;
                                     }
+                                    case 3 :
+                                        {
+                                            goto start;
+                                            break;
+                                        }
                                 }
                                 break;
                             }
@@ -142,6 +149,8 @@ void main() {
                         break;
                     case 6 :
                         save_client(head_client);
+                        save_accounts(head_account);
+
                         free_all(&head_client, &head_account);
                         p_exit(3);
                 }
@@ -191,6 +200,8 @@ void main() {
                         break;
                     case 6 : 
                         save_client(head_client);
+                        save_accounts(head_account);
+
                         
             
                         free_all(&head_client, &head_account);
@@ -222,6 +233,8 @@ void main() {
                         break;
                     case 4 : 
                         save_client(head_client);
+                        save_accounts(head_account);
+
                         
             
                         free_all(&head_client, &head_account);
@@ -230,6 +243,8 @@ void main() {
                 break;
             case 4 : 
                 save_client(head_client);
+                save_accounts(head_account);
+
                 
     
                 free_all(&head_client, &head_account);
