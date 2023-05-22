@@ -5,6 +5,7 @@
 #include <sys/ioctl.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 
 int rand_ms() {
     struct timeval tv;
@@ -80,6 +81,10 @@ typedef struct account {
     int id_client;
     int balance;
     c_date date;
+    struct {
+        c_date date_op;
+        int op;
+    };
     struct account *next_account;
 }account;
 
@@ -376,19 +381,17 @@ void save_accounts(account *account_start) {
     }
     account *ptr = account_start;
     while (ptr != NULL) {
-        fprintf(fd_w, "%d, %d, %d, %d, %d, %d\n", ptr -> id_account, ptr -> id_client, ptr -> balance, ptr -> date.day, ptr -> date.month, ptr -> date.year);
+        fprintf(fd_w, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", ptr -> id_account, ptr -> id_client, ptr -> balance, ptr -> date.day, ptr -> date.month, ptr -> date.year, ptr -> date_op.day, ptr -> date_op.month, ptr -> date_op.year, ptr -> op);
         ptr = ptr -> next_account;
     }
     fclose(fd_w);
 }
 
 void delete_last_account(account **head) {
+
     account *ptr = *head;
-    if (*head == NULL) {
-        return;
-    }
     account *last_account = NULL;
-    while(ptr -> next_account != NULL) {
+    while (ptr -> next_account != NULL) {
         last_account = ptr;
         ptr = ptr -> next_account;
     }
@@ -408,11 +411,12 @@ void read_accounts(account **account_start) {
     }
     *account_start = malloc(sizeof(account));
     account *ptr = *account_start;
-    while(fscanf(fd_r, "%d, %d, %d, %d, %d, %d\n", &(ptr -> id_account), &(ptr -> id_client), &(ptr -> balance), &(ptr -> date.day), &(ptr -> date.month), &(ptr -> date.year)) > 0) {
+    while(fscanf(fd_r, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", &(ptr -> id_account), &(ptr -> id_client), &(ptr -> balance), &(ptr -> date.day), &(ptr -> date.month), &(ptr -> date.year), &(ptr -> date_op.day), &(ptr -> date_op.month), &(ptr -> date_op.year), &(ptr -> op)) > 0) {
         ptr -> next_account = malloc(sizeof(account));
         ptr = ptr -> next_account;
         ptr -> next_account = NULL;
     }
+    ptr -> next_account = NULL;
     delete_last_account(account_start);
     fclose(fd_r);
 }
@@ -458,9 +462,116 @@ void add_account(account **head_a, client *head_c) {
     putchar('\n');
     actual_time(&(last_account -> date));
     last_account -> id_account = generate_id();
+    actual_time(&(last_account -> date_op));
+    last_account -> op = last_account -> balance; 
     putchar('\n');
 }
 
 
 
 
+void consultation(account *head_account, client *head_client, int client_id) {
+    int cols;
+    terminal_size(&cols);
+    system("clear");
+    putchar('\n');
+
+    client *ptr_c = head_client;
+    account *ptr_a = head_account;
+    while (ptr_a != NULL && ptr_a -> id_client != client_id) {
+        ptr_a = ptr_a -> next_account;
+    }
+    if (ptr_a == NULL) {
+        return;
+    }
+    while (ptr_c != NULL && (ptr_c -> id_client) != (ptr_a -> id_client)) {
+        ptr_c = ptr_c -> next_client;
+    }
+    int len = strlen(ptr_c -> first_name) + strlen(ptr_c -> last_name);
+    center("id client : ", cols);
+    printf("%d\n\n", ptr_a -> id_client);
+    for (int i = 0; i < cols; i++) {
+        printf("-");
+    }
+    putchar('\n');
+    for (int i = 0; i < ((cols / 4) - 14)/2 ; i++) {
+        putchar(' ');
+    }
+    printf("account ID");
+    for (int i = 0; i < ((cols / 4) - 10)/2; i++) {
+        putchar(' ');
+    }
+    putchar('|');
+    for (int i = 0; i < ((cols / 4) - 13)/2; i++) {
+        putchar(' ');
+    }
+    printf(" Nom & Prenom ");
+    for (int i = 0; i < ((cols / 4) - 13)/2; i++) {
+        putchar(' ');
+    }
+    putchar('|');
+    for (int i = 0; i < ((cols / 4) - 15)/2; i++) {
+        putchar(' ');
+    }
+    printf(" Solde de base ");
+    for (int i = 0; i < ((cols / 4) - 15)/2; i++) {
+        putchar(' ');
+    }
+    putchar('|');
+    for (int i = 0; i < ((cols / 4) - 21)/2; i++) {
+        putchar(' ');
+    }
+    printf(" Operations effectuees\n");
+    
+    ptr_a = head_account;
+    while (ptr_a != NULL) {
+        if (ptr_a -> id_client == client_id) {
+            for (int i = 0; i < cols; i++) {
+                putchar('-');
+            }
+            for (int i = 0; i < ((cols / 4) - 8)/2 ; i++) {
+                putchar(' ');
+            }
+            printf("%d", ptr_a -> id_account);
+            for (int i = 0; i < ((cols / 4) - 8)/2; i++) {
+                putchar(' ');
+            }
+            putchar('|');
+            for (int i = 0; i < ((cols / 4) - len+1)/2; i++) {
+                putchar(' ');
+            }
+            printf("%s %s", ptr_c -> last_name, ptr_c -> first_name);
+            for (int i = 0; i < ((cols / 4) - len+1)/2; i++) {
+                putchar(' ');
+            }
+            putchar('|');
+            for (int i = 0; i < ((cols / 4) - (floor(log10(ptr_a -> balance) + 1)))/2; i++) {
+                putchar(' ');
+            }
+            printf("%d", ptr_a -> balance);
+            for (int i = 0; i < ((cols / 4) - (floor(log10(ptr_a -> balance) + 1)))/2; i++) {
+                putchar(' ');
+            }
+            putchar('|');
+            for (int i = 0; i < ((cols / 4) - 14)/2; i++) {
+                putchar(' ');
+            }
+            printf("%d/%d/%d : ", ptr_a -> date_op.day, ptr_a -> date_op.month, ptr_a -> date_op.year);
+            if (ptr_a -> op > 0) {
+                printf("+%dDH\n", ptr_a -> op);
+            }
+            else {
+                printf("-%dDH\n", ptr_a -> op);
+            }
+
+        }
+        
+        ptr_a = ptr_a -> next_account;
+    }
+    for(int i = 0; i < cols; i++) {
+        putchar('-');
+    }
+    fflush(stdout);
+    sleep(8);
+
+}

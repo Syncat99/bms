@@ -191,9 +191,18 @@ void main() {
                             // supprimer compte
                             break;
                     case 4 :
+                            // consultation
                             {
-                                ;
+                                int inp;
+                                center("client id : ", cols);
+                                scanf("%d", &inp);
+                                getchar();
+                                consultation(head_account, head_client, inp);
+
+                                goto start;
+                                break;
                             }
+                            
                     case 5 :
                         putchar('\n');
                         goto start;
