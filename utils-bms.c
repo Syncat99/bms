@@ -71,7 +71,7 @@ void actual_time(c_date *date) {
 typedef struct client {
     char last_name[50];
     char first_name[50];
-    char phone_num[10];
+    char phone_num[12];
     char profession[50];
     int id_client;
     struct client *next_client;
@@ -235,7 +235,6 @@ void menu(int menu_number) {
                 center("[3] - Supprimer client\n", cols);
                 center("[4] - Rechercher client\n", cols);
                 center("[5] - Revenir au Menu principal\n", cols);
-                center("[6] - Quitter\n", cols);
                 center("=============================\n\n", cols);
                 center("> ", cols);
                 break;
@@ -247,11 +246,9 @@ void menu(int menu_number) {
                 center("    ** GESTION DES COMPTES **\n", cols);
                 center("================================\n", cols);
                 center("[1] - Ajouter un compte\n", cols);
-                center("[2] - Modifier un compte\n", cols);
+                center("[2] - Consulter un compte\n", cols);
                 center("[3] - Supprimer un compte\n", cols);
-                center("[4] - Rechercher un compte\n", cols);
-                center("[5] - Revenir au Menu principal\n", cols);
-                center("[6] - Quitter\n", cols);
+                center("[4] - Revenir au Menu principal\n", cols);
                 center("================================\n\n", cols);
                 center("> ", cols);
                 break;
@@ -265,7 +262,6 @@ void menu(int menu_number) {
                 center("[1] - Retrait\n", cols);
                 center("[2] - Virement\n", cols);
                 center("[3] - Revenir au Menu principal\n", cols);
-                center("[4] - Quitter\n", cols);
                 center("================================\n\n", cols);
                 center("> ", cols);
                 break;
@@ -337,6 +333,7 @@ void read_clients(client **first_client) {
     delete_last_client(first_client);
     fclose(fd_r);
 }
+
 void clients_list(client *first_client) {
     client *ptr;
     ptr = first_client;
@@ -470,9 +467,7 @@ void add_account(account **head_a, client *head_c) {
 
 
 
-void consultation(account *head_account, client *head_client, int client_id) {
-    int cols;
-    terminal_size(&cols);
+void consultation(account *head_account, client *head_client, int client_id, int cols) {
     system("clear");
     putchar('\n');
 
@@ -481,7 +476,7 @@ void consultation(account *head_account, client *head_client, int client_id) {
     while (ptr_a != NULL && ptr_a -> id_client != client_id) {
         ptr_a = ptr_a -> next_account;
     }
-    if (ptr_a == NULL) {
+    if (ptr_a == NULL || ptr_c == NULL) {
         return;
     }
     while (ptr_c != NULL && (ptr_c -> id_client) != (ptr_a -> id_client)) {
@@ -533,7 +528,7 @@ void consultation(account *head_account, client *head_client, int client_id) {
                 putchar(' ');
             }
             printf("%d", ptr_a -> id_account);
-            for (int i = 0; i < ((cols / 4) - 8)/2; i++) {
+            for (int i = 0; i < ((cols / 4) - 7)/2; i++) {
                 putchar(' ');
             }
             putchar('|');
@@ -541,15 +536,15 @@ void consultation(account *head_account, client *head_client, int client_id) {
                 putchar(' ');
             }
             printf("%s %s", ptr_c -> last_name, ptr_c -> first_name);
-            for (int i = 0; i < ((cols / 4) - len+1)/2; i++) {
+            for (int i = 0; i < ((cols / 4) - len+1)/2 -1; i++) {
                 putchar(' ');
             }
             putchar('|');
-            for (int i = 0; i < ((cols / 4) - (floor(log10(ptr_a -> balance) + 1)))/2; i++) {
+            for (int i = 0; i < ((cols / 4) - (floor(log10(abs(ptr_a -> balance)) + 1)))/2; i++) {
                 putchar(' ');
             }
             printf("%d", ptr_a -> balance);
-            for (int i = 0; i < ((cols / 4) - (floor(log10(ptr_a -> balance) + 1)))/2; i++) {
+            for (int i = 0; i < ((cols / 4) - (floor(log10(abs(ptr_a -> balance)) + 1)))/2; i++) {
                 putchar(' ');
             }
             putchar('|');
@@ -561,7 +556,7 @@ void consultation(account *head_account, client *head_client, int client_id) {
                 printf("+%dDH\n", ptr_a -> op);
             }
             else {
-                printf("-%dDH\n", ptr_a -> op);
+                printf("%dDH\n", ptr_a -> op);
             }
 
         }
@@ -572,6 +567,110 @@ void consultation(account *head_account, client *head_client, int client_id) {
         putchar('-');
     }
     fflush(stdout);
-    sleep(8);
+    sleep(10);
 
 }
+
+void withdraw(account **head) {
+    int cols, id, sum;
+    terminal_size(&cols);
+    account *ptr = *head;
+    system("clear");
+
+    center("id du compte : ", cols);
+    scanf("%d", &id);
+    getchar();
+    putchar('\n');
+    if (*head == NULL) {
+        center("Compte introuvable", cols);
+        return;
+    }
+    while (ptr -> id_account != id) {
+        ptr = ptr -> next_account;
+    }
+    if (ptr -> id_account == id) {
+        center("Somme a retirer : ", cols);
+        do {
+            scanf("%d", &sum);
+            if (sum <= 0 || sum > 700) {
+                center("la somme doit etre inferieure a 700DH", cols);
+            }
+        } while (sum <= 0 || sum > 700);        
+        getchar();
+
+        ptr -> balance = ptr -> balance - sum;
+        ptr -> op = -sum;
+        actual_time(&(ptr -> date_op));
+    }
+    else {
+        center("Compte introuvable", cols);
+        return;
+    }
+}
+
+void transfer(account **head) {
+    int cols, id, sum;
+    terminal_size(&cols);
+    account *ptr = *head;
+    system("clear");
+
+    center("id du compte : ", cols);
+    scanf("%d", &id);
+    getchar();
+    putchar('\n');
+    if (*head == NULL) {
+        center("Compte introuvable", cols);
+        return;
+    }
+    while (ptr -> id_account != id) {
+        ptr = ptr -> next_account;
+    }
+    if (ptr -> id_account == id) {
+        center("Somme a transferer : ", cols);
+        do {
+            scanf("%d", &sum);
+            if (sum <= 49) {
+                center("la somme doit etre superieure a 50DH", cols);
+            }
+        } while (sum <= 49);
+        getchar();
+        ptr -> balance = ptr -> balance + sum;
+        ptr -> op = sum;
+        actual_time(&(ptr -> date_op));
+    }
+    else {
+        center("Compte introuvable", cols);
+        return;
+    }
+}
+
+void delete_account(account **head) {
+    int cols, id;
+    account *ptr = *head;
+    account *last_account;
+    terminal_size(&cols);
+    system("clear");
+    center("ID du compte a fermer : ", cols);
+    scanf("%d", &id);
+    getchar();
+    if (*head == NULL) {
+        center("Compte introuvable, la suppression a echoue", cols);
+        return;
+    }
+    while (ptr -> id_account != id) {
+        last_account = ptr;
+        ptr = ptr -> next_account;
+    }
+    if (ptr -> id_account == id) {
+        if (ptr -> next_account == NULL) {
+            last_account -> next_account = NULL;
+        }
+        last_account -> next_account = ptr -> next_account;
+        free(ptr);
+        return;
+    }
+    return;
+    
+}
+
+

@@ -171,50 +171,25 @@ void main() {
                             add_account(&head_account, head_client);// ajout compte
                             goto start;
                             break;
-                    case 2 :{
-                            account *ptr = head_account;// modifier compte
-                            while (ptr != NULL) {
-                                putchar('\n');
-                                center("id_client : #", cols);
-                                printf("%d\n", ptr -> id_client);
-                                center("date de creation : ", cols);
-                                printf("%02d/%02d/%4d\n", ptr -> date.day, ptr -> date.month, ptr -> date.year);
-                                center("Solde actuel : ", cols);
-                                printf("%d\n", ptr -> balance);
-                                ptr = ptr -> next_account;
-                            }
-                            sleep(4);
-                            goto start;
-                            break;
-                            }
-                    case 3 :
-                            // supprimer compte
-                            break;
-                    case 4 :
+                    case 2 :
                             // consultation
                             {
                                 int inp;
                                 center("client id : ", cols);
                                 scanf("%d", &inp);
                                 getchar();
-                                consultation(head_account, head_client, inp);
+                                consultation(head_account, head_client, inp, cols);
 
                                 goto start;
                                 break;
                             }
                             
-                    case 5 :
-                        putchar('\n');
+                    case 3 :
+                            delete_account(&head_account); // supprimer compte
+                            goto start;
+                            break;
+                    case 4 :
                         goto start;
-                        break;
-                    case 6 : 
-                        save_client(head_client);
-                        save_accounts(head_account);
-
-                        
-            
-                        free_all(&head_client, &head_account);
-                        p_exit(3);
                 }
 
                 break;
@@ -231,23 +206,15 @@ void main() {
                 }while(input < 1 || input > 4);
                 switch (input) {
                     case 1 :
-                            // retrait
+                            withdraw(&head_account);// retrait
+                            goto start;
                             break;
                     case 2 :
-                            // virement
+                            transfer(&head_account);// virement
+                            goto start;
                             break;
                     case 3 :
-                        putchar('\n');
                         goto start;
-                        break;
-                    case 4 : 
-                        save_client(head_client);
-                        save_accounts(head_account);
-
-                        
-            
-                        free_all(&head_client, &head_account);
-                        p_exit(3);
                 }
                 break;
             case 4 : 
