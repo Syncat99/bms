@@ -178,18 +178,76 @@ void delete_last_client(client **head) {
     }
     free(ptr);
 }
-void delete_client(client **head, int id) {
-    client *ptr = *head;
-    client *last_client;
-    while (ptr != NULL) {
-        if (ptr -> id_client == id) {
-            last_client -> next_client = ptr -> next_client;
-            free(ptr);
-            return;
-        }
-        last_client = ptr;
-        ptr = ptr -> next_client;
+void free_all(client **client_start, account **account_start) {
+    client *ptr = *client_start;
+    client *lastc = ptr;
+    account *ptr1 = *account_start;
+    account *lasta = ptr1;
+
+    while(ptr != NULL) {
+        lastc = ptr -> next_client;
+        free(ptr);
+        ptr = lastc;
     }
+    while(ptr1 != NULL) {
+        lasta = ptr1 -> next_account;
+        free(ptr1);
+        ptr1 = lasta;
+    }
+
+}
+
+
+void delete_client(client **head_client) {
+    int cols, inp;
+    terminal_size(&cols);
+    client *ptr = *head_client;
+    client *last_client = NULL;
+    system("clear");
+    center("1 - un seul client.\n", cols);
+    center("2 - tous les clients.\n", cols);
+    center("> ", cols);
+    do {
+        scanf("%d", &inp);
+    } while (inp < 1 || inp > 2);
+    getchar();
+    switch(inp) {
+        case 1 :
+            {
+                int id;
+                center("id du client : ", cols);
+                scanf("%d", &id);
+                getchar();
+                while (ptr != NULL) {
+                    if (ptr -> id_client == id) {
+                        last_client -> next_client = ptr -> next_client;
+                        free(ptr);
+                        return;
+                    }
+                    last_client = ptr;
+                    ptr = ptr -> next_client;
+                }
+                last_client -> next_client = NULL;
+                return;
+            }
+        case 2 :
+            {
+                if (ptr == NULL) {
+                    return;
+                }
+                while (ptr -> next_client != NULL) {
+                    last_client = ptr -> next_client;
+                    free(ptr);
+                    ptr = last_client;
+                }
+                free(ptr);
+                *head_client = NULL;
+                return;
+            }
+
+    }
+    
+    
 
 }
 int search_bool(client *first_client, const char *l_name, const char *f_name) {
@@ -351,24 +409,6 @@ void save_client(client *head) {
         fprintf(fd_w, "%s, %s, %s, %s, %05d\n", curr -> last_name, curr -> first_name, curr -> phone_num, curr -> profession, curr -> id_client);
     }
     fclose(fd_w);
-}
-void free_all(client **client_start, account **account_start) {
-    client *ptr = *client_start;
-    client *lastc = ptr;
-    account *ptr1 = *account_start;
-    account *lasta = ptr1;
-
-    while(ptr != NULL) {
-        lastc = ptr -> next_client;
-        free(ptr);
-        ptr = lastc;
-    }
-    while(ptr1 != NULL) {
-        lasta = ptr1 -> next_account;
-        free(ptr1);
-        ptr1 = lasta;
-    }
-
 }
 
 void save_accounts(account *account_start) {
@@ -657,7 +697,7 @@ void delete_account(account **head) {
         center("Compte introuvable, la suppression a echoue", cols);
         return;
     }
-    while (ptr -> id_account != id) {
+    while (ptr -> id_account != id && ptr -> next_account != NULL) {
         last_account = ptr;
         ptr = ptr -> next_account;
     }

@@ -59,11 +59,7 @@ void main() {
                             }
                     case 3 :    
                             {
-                                int inp;
-                                center("id du client :  ", cols);
-                                scanf("%d", &inp);
-                                getchar();
-                                delete_client(&head_client, inp);             // supprimer client
+                                delete_client(&head_client);             // supprimer client
                                 goto start;
                                 break;
                             }
