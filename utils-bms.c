@@ -70,7 +70,7 @@ void actual_time(c_date *date) {
 }
 
 
-
+//structure client
 typedef struct client {
     char last_name[50];
     char first_name[50];
@@ -80,6 +80,7 @@ typedef struct client {
     struct client *next_client;
 }client;
 
+//fonction d'ajout clients
 void add_client(client **first_client) {
     static int id = 0;
     int cols;
@@ -126,6 +127,7 @@ void add_client(client **first_client) {
     fflush(stdout);
     sleep(2);
 }
+//fonction de recherche client par Id du client
 void *search_client_id(client *first_client, int id) {
     client *ptr;
     if (first_client == NULL) {
@@ -140,7 +142,7 @@ void *search_client_id(client *first_client, int id) {
     }
     return NULL;
 }
-
+//fonction de recherche client par Nom
 void *search_client_last_name(client *first_client, const char *l_name) {
     client *ptr = malloc(sizeof(client));
     if (first_client == NULL) {
@@ -155,6 +157,7 @@ void *search_client_last_name(client *first_client, const char *l_name) {
     }
     return 0;
 }
+//fonction de suppression du dernier client (A NE PAS INCLURE DANS LA PRESENTATION/RAPPORT)
 void delete_last_client(client **head) {
     client *ptr = *head;
     client *last_client = NULL;
@@ -170,7 +173,7 @@ void delete_last_client(client **head) {
     }
     free(ptr);
 }
-
+//fonction de suppression d'un client
 void delete_client(client **head_client) {
     int cols, inp;
     terminal_size(&cols);
@@ -223,21 +226,7 @@ void delete_client(client **head_client) {
     
 
 }
-// int search_bool(client *first_client, const char *l_name, const char *f_name) {
-//     client *ptr;
-//     if (first_client == NULL) {
-//         return 0;
-//     }
-//     ptr = first_client;
-//     while (ptr != NULL) {
-//         if ((strcmp(ptr->last_name, l_name) == 0) && (strcmp(ptr->first_name, f_name) == 0)) {
-//             return 1;
-//         }
-//         ptr = ptr -> next_client;
-//     }
-//     return 0;
-// }
-
+//fonction de modification client
 void modify_client(client **first_client, int id, int choice) {
     int cols, inp;
     terminal_size(&cols);
@@ -279,7 +268,7 @@ void modify_client(client **first_client, int id, int choice) {
         center("Client introuvable.\n", cols);
     }
 }
-
+//fonction pour enregistrer les donnees dans un fichier externe
 void read_clients(client **first_client) {
     int cols;
     static int num, i = 0;
@@ -300,7 +289,16 @@ void read_clients(client **first_client) {
     delete_last_client(first_client);
     fclose(fd_r);
 }
-
+//fonction pour lire les donnees a partir d'un fichier externe
+void save_client(client *head) {
+    client *curr = head;
+    FILE* fd_w = fopen("clients.txt", "w");
+    for (; curr != NULL; curr = curr -> next_client) {
+        fprintf(fd_w, "%s, %s, %s, %s, %05d\n", curr -> last_name, curr -> first_name, curr -> phone_num, curr -> profession, curr -> id_client);
+    }
+    fclose(fd_w);
+}
+//(A NE PAS INCLURE DANS LA PRESENTATION/RAPPORT)
 void clients_list(client *first_client) {
     client *ptr;
     ptr = first_client;
@@ -311,18 +309,9 @@ void clients_list(client *first_client) {
         ptr = ptr -> next_client;
     }
 }
-void save_client(client *head) {
-    client *curr = head;
-    FILE* fd_w = fopen("clients.txt", "w");
-    for (; curr != NULL; curr = curr -> next_client) {
-        fprintf(fd_w, "%s, %s, %s, %s, %05d\n", curr -> last_name, curr -> first_name, curr -> phone_num, curr -> profession, curr -> id_client);
-    }
-    fclose(fd_w);
-}
 
 
-
-
+//structure compte
 typedef struct account {
     int id_account;
     int id_client;
@@ -334,7 +323,7 @@ typedef struct account {
     };
     struct account *next_account;
 }account;
-
+//fonction pour enregistrer les donnees dans un fichier externe
 void save_accounts(account *account_start) {
     FILE* fd_w = fopen("accounts.txt", "w");
     if (fd_w == NULL || account_start == NULL) {
@@ -347,7 +336,7 @@ void save_accounts(account *account_start) {
     }
     fclose(fd_w);
 }
-
+//fonction de suppression du dernier compte (A NE PAS INCLURE DANS LA PRESENTATION/RAPPORT)
 void delete_last_account(account **head) {
 
     account *ptr = *head;
@@ -364,7 +353,7 @@ void delete_last_account(account **head) {
     }
     free(ptr);
 }
-
+//fonction pour lire les donnees a partir d'un fichier externe
 void read_accounts(account **account_start) {
     FILE* fd_r = fopen("accounts.txt", "r");
     if (fd_r == NULL) {
@@ -381,7 +370,7 @@ void read_accounts(account **account_start) {
     delete_last_account(account_start);
     fclose(fd_r);
 }
-
+//fonction d'ajout de compte
 void add_account(account **head_a, client *head_c) {
     int cols;
     terminal_size(&cols);
@@ -427,7 +416,7 @@ void add_account(account **head_a, client *head_c) {
     last_account -> op = last_account -> balance; 
     putchar('\n');
 }
-
+//fonction qui affiche tous les comptes d'un client 
 void consultation(account *head_account, client *head_client, int client_id, int cols) {
     system("clear");
     putchar('\n');
@@ -531,7 +520,7 @@ void consultation(account *head_account, client *head_client, int client_id, int
     sleep(10);
 
 }
-
+//fonction pour le retrait d'une somme depuis un compte
 void withdraw(account **head) {
     int cols, id, sum;
     terminal_size(&cols);
@@ -568,7 +557,7 @@ void withdraw(account **head) {
         return;
     }
 }
-
+//fonction pour le transfert d'une somme a un compte
 void transfer(account **head) {
     int cols, id, sum;
     terminal_size(&cols);
@@ -604,7 +593,7 @@ void transfer(account **head) {
         return;
     }
 }
-
+//fonction de suppression d'un compte
 void delete_account(account **head) {
     int cols, id;
     account *ptr = *head;
@@ -635,7 +624,7 @@ void delete_account(account **head) {
 }
 
 
-
+//(A NE PAS INCLURE DANS LA PRESENTATION/RAPPORT)
 void free_all(client **client_start, account **account_start) {
     client *ptr = *client_start;
     client *lastc = ptr;
@@ -654,6 +643,7 @@ void free_all(client **client_start, account **account_start) {
     }
 
 }
+//fonction qui affiche le menu voulu
 void menu(int menu_number) {
     int cols, inp;
     terminal_size(&cols);
