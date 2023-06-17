@@ -68,6 +68,9 @@ void actual_time(c_date *date) {
     (date -> month) = (int)tm.tm_mon + 1;
     (date -> day) = (int)tm.tm_mday;
 }
+
+
+
 typedef struct client {
     char last_name[50];
     char first_name[50];
@@ -76,17 +79,6 @@ typedef struct client {
     int id_client;
     struct client *next_client;
 }client;
-typedef struct account {
-    int id_account;
-    int id_client;
-    int balance;
-    c_date date;
-    struct {
-        c_date date_op;
-        int op;
-    };
-    struct account *next_account;
-}account;
 
 void add_client(client **first_client) {
     static int id = 0;
@@ -178,25 +170,6 @@ void delete_last_client(client **head) {
     }
     free(ptr);
 }
-void free_all(client **client_start, account **account_start) {
-    client *ptr = *client_start;
-    client *lastc = ptr;
-    account *ptr1 = *account_start;
-    account *lasta = ptr1;
-
-    while(ptr != NULL) {
-        lastc = ptr -> next_client;
-        free(ptr);
-        ptr = lastc;
-    }
-    while(ptr1 != NULL) {
-        lasta = ptr1 -> next_account;
-        free(ptr1);
-        ptr1 = lasta;
-    }
-
-}
-
 
 void delete_client(client **head_client) {
     int cols, inp;
@@ -250,84 +223,20 @@ void delete_client(client **head_client) {
     
 
 }
-int search_bool(client *first_client, const char *l_name, const char *f_name) {
-    client *ptr;
-    if (first_client == NULL) {
-        return 0;
-    }
-    ptr = first_client;
-    while (ptr != NULL) {
-        if ((strcmp(ptr->last_name, l_name) == 0) && (strcmp(ptr->first_name, f_name) == 0)) {
-            return 1;
-        }
-        ptr = ptr -> next_client;
-    }
-    return 0;
-}
-void menu(int menu_number) {
-    int cols, inp;
-    terminal_size(&cols);
-    switch(menu_number) {
-        case 1 : 
-            {   
-                system("clear");
-                center("============================\n", cols);
-                center("    ** MENU PRINCIPAL **\n", cols);
-                center("============================\n", cols);
-                center("[1] - Gestion des clients\n", cols);
-                center("[2] - Gestion des comptes\n", cols);
-                center("[3] - Gestion des opérations\n", cols);
-                center("[4] - Quitter\n", cols);            
-                center("============================\n\n", cols);
-                center("> ", cols);
-                break;
-            }
-        case 2 : 
-            {
-                system("clear");
-                center("=============================\n", cols);
-                center("  ** GESTION DES CLIENTS **\n", cols);
-                center("=============================\n", cols);
-                center("[1] - Ajouter un client\n", cols);
-                center("[2] - Modifier client\n", cols);
-                center("[3] - Supprimer client\n", cols);
-                center("[4] - Rechercher client\n", cols);
-                center("[5] - Revenir au Menu principal\n", cols);
-                center("=============================\n\n", cols);
-                center("> ", cols);
-                break;
-            }
-        case 3 :
-            {
-                system("clear");
-                center("================================\n", cols);
-                center("    ** GESTION DES COMPTES **\n", cols);
-                center("================================\n", cols);
-                center("[1] - Ajouter un compte\n", cols);
-                center("[2] - Consulter un compte\n", cols);
-                center("[3] - Supprimer un compte\n", cols);
-                center("[4] - Revenir au Menu principal\n", cols);
-                center("================================\n\n", cols);
-                center("> ", cols);
-                break;
-            }
-        case 4 :
-            {
-                system("clear");
-                center("================================\n", cols);
-                center("  ** GESTION DES OPERATIONS **\n", cols);
-                center("================================\n", cols);
-                center("[1] - Retrait\n", cols);
-                center("[2] - Virement\n", cols);
-                center("[3] - Revenir au Menu principal\n", cols);
-                center("================================\n\n", cols);
-                center("> ", cols);
-                break;
-            }
-        default : 
-            p_exit;
-    }
-}
+// int search_bool(client *first_client, const char *l_name, const char *f_name) {
+//     client *ptr;
+//     if (first_client == NULL) {
+//         return 0;
+//     }
+//     ptr = first_client;
+//     while (ptr != NULL) {
+//         if ((strcmp(ptr->last_name, l_name) == 0) && (strcmp(ptr->first_name, f_name) == 0)) {
+//             return 1;
+//         }
+//         ptr = ptr -> next_client;
+//     }
+//     return 0;
+// }
 
 void modify_client(client **first_client, int id, int choice) {
     int cols, inp;
@@ -410,6 +319,21 @@ void save_client(client *head) {
     }
     fclose(fd_w);
 }
+
+
+
+
+typedef struct account {
+    int id_account;
+    int id_client;
+    int balance;
+    c_date date;
+    struct {
+        c_date date_op;
+        int op;
+    };
+    struct account *next_account;
+}account;
 
 void save_accounts(account *account_start) {
     FILE* fd_w = fopen("accounts.txt", "w");
@@ -503,9 +427,6 @@ void add_account(account **head_a, client *head_c) {
     last_account -> op = last_account -> balance; 
     putchar('\n');
 }
-
-
-
 
 void consultation(account *head_account, client *head_client, int client_id, int cols) {
     system("clear");
@@ -714,3 +635,86 @@ void delete_account(account **head) {
 }
 
 
+
+void free_all(client **client_start, account **account_start) {
+    client *ptr = *client_start;
+    client *lastc = ptr;
+    account *ptr1 = *account_start;
+    account *lasta = ptr1;
+
+    while(ptr != NULL) {
+        lastc = ptr -> next_client;
+        free(ptr);
+        ptr = lastc;
+    }
+    while(ptr1 != NULL) {
+        lasta = ptr1 -> next_account;
+        free(ptr1);
+        ptr1 = lasta;
+    }
+
+}
+void menu(int menu_number) {
+    int cols, inp;
+    terminal_size(&cols);
+    switch(menu_number) {
+        case 1 : 
+            {   
+                system("clear");
+                center("============================\n", cols);
+                center("    ** MENU PRINCIPAL **\n", cols);
+                center("============================\n", cols);
+                center("[1] - Gestion des clients\n", cols);
+                center("[2] - Gestion des comptes\n", cols);
+                center("[3] - Gestion des opérations\n", cols);
+                center("[4] - Quitter\n", cols);            
+                center("============================\n\n", cols);
+                center("> ", cols);
+                break;
+            }
+        case 2 : 
+            {
+                system("clear");
+                center("=============================\n", cols);
+                center("  ** GESTION DES CLIENTS **\n", cols);
+                center("=============================\n", cols);
+                center("[1] - Ajouter un client\n", cols);
+                center("[2] - Modifier client\n", cols);
+                center("[3] - Supprimer client\n", cols);
+                center("[4] - Rechercher client\n", cols);
+                center("[5] - Revenir au Menu principal\n", cols);
+                center("=============================\n\n", cols);
+                center("> ", cols);
+                break;
+            }
+        case 3 :
+            {
+                system("clear");
+                center("================================\n", cols);
+                center("    ** GESTION DES COMPTES **\n", cols);
+                center("================================\n", cols);
+                center("[1] - Ajouter un compte\n", cols);
+                center("[2] - Consulter un compte\n", cols);
+                center("[3] - Supprimer un compte\n", cols);
+                center("[4] - Revenir au Menu principal\n", cols);
+                center("================================\n\n", cols);
+                center("> ", cols);
+                break;
+            }
+        case 4 :
+            {
+                system("clear");
+                center("================================\n", cols);
+                center("  ** GESTION DES OPERATIONS **\n", cols);
+                center("================================\n", cols);
+                center("[1] - Retrait\n", cols);
+                center("[2] - Virement\n", cols);
+                center("[3] - Revenir au Menu principal\n", cols);
+                center("================================\n\n", cols);
+                center("> ", cols);
+                break;
+            }
+        default : 
+            p_exit;
+    }
+}
