@@ -156,12 +156,12 @@ void main() {
                 do {
                     input = getchar() - '0';
                     getchar();
-                    if (input < 1 || input > 6) {
+                    if (input < 1 || input > 4) {
                         putchar('\n');
                         center("/!\\ Choix incorrect.\n\n", cols);
                         center("> ", cols);
                     }
-                }while(input < 1 || input > 6);
+                }while(input < 1 || input > 4);
                 switch (input) {
                     case 1 :
                             add_account(&head_account, head_client);// ajout compte
@@ -203,6 +203,7 @@ void main() {
                 switch (input) {
                     case 1 :
                             withdraw(&head_account);// retrait
+                            system("clear");
                             goto start;
                             break;
                     case 2 :

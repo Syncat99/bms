@@ -39,7 +39,6 @@ void center(const char *text, int cols) {
     int width = strlen(text);
     int margin = (cols / 2) - 10;
     int new_col = margin;
-    // printf("\033[%d;%dH", (*row)++, new_col);
     if (cols < 150) {
         margin = (cols / 2) - 15;
     }
@@ -68,8 +67,18 @@ void actual_time(c_date *date) {
     (date -> month) = (int)tm.tm_mon + 1;
     (date -> day) = (int)tm.tm_mday;
 }
-
-
+//structure compte
+typedef struct account {
+    int id_account;
+    int id_client;
+    int balance;
+    c_date date;
+    struct {
+        c_date date_op;
+        int op;
+    };
+    struct account *next_account;
+}account;
 //structure client
 typedef struct client {
     char last_name[50];
@@ -90,8 +99,7 @@ void add_client(client **first_client) {
     if (*first_client == NULL) {
         id++;
         *first_client = malloc(sizeof(client));
-        (last_client) = *first_client;
-        (last_client) -> next_client = NULL;
+        (*first_client) -> next_client = NULL;
     }
     else {
         if (id == 0) {
@@ -157,7 +165,7 @@ void *search_client_last_name(client *first_client, const char *l_name) {
     }
     return 0;
 }
-//fonction de suppression du dernier client (A NE PAS INCLURE DANS LA PRESENTATION/RAPPORT)
+//fonction de suppression du dernier client
 void delete_last_client(client **head) {
     client *ptr = *head;
     client *last_client = NULL;
@@ -220,11 +228,7 @@ void delete_client(client **head_client) {
                 *head_client = NULL;
                 return;
             }
-
     }
-    
-    
-
 }
 //fonction de modification client
 void modify_client(client **first_client, int id, int choice) {
@@ -298,7 +302,7 @@ void save_client(client *head) {
     }
     fclose(fd_w);
 }
-//(A NE PAS INCLURE DANS LA PRESENTATION/RAPPORT)
+//
 void clients_list(client *first_client) {
     client *ptr;
     ptr = first_client;
@@ -311,18 +315,7 @@ void clients_list(client *first_client) {
 }
 
 
-//structure compte
-typedef struct account {
-    int id_account;
-    int id_client;
-    int balance;
-    c_date date;
-    struct {
-        c_date date_op;
-        int op;
-    };
-    struct account *next_account;
-}account;
+
 //fonction pour enregistrer les donnees dans un fichier externe
 void save_accounts(account *account_start) {
     FILE* fd_w = fopen("accounts.txt", "w");
@@ -336,7 +329,7 @@ void save_accounts(account *account_start) {
     }
     fclose(fd_w);
 }
-//fonction de suppression du dernier compte (A NE PAS INCLURE DANS LA PRESENTATION/RAPPORT)
+//fonction de suppression du dernier compte 
 void delete_last_account(account **head) {
 
     account *ptr = *head;
@@ -532,10 +525,12 @@ void withdraw(account **head) {
     getchar();
     putchar('\n');
     if (*head == NULL) {
-        center("Compte introuvable", cols);
+        center("Compte introuvable\n", cols);
+        sleep(3);
+        system("clear");
         return;
     }
-    while (ptr -> id_account != id) {
+    while (ptr -> id_account != id && ptr -> next_account != NULL) {
         ptr = ptr -> next_account;
     }
     if (ptr -> id_account == id) {
@@ -554,6 +549,9 @@ void withdraw(account **head) {
     }
     else {
         center("Compte introuvable", cols);
+        fflush(stdout);
+        sleep(3);
+        system("clear");
         return;
     }
 }
@@ -569,10 +567,12 @@ void transfer(account **head) {
     getchar();
     putchar('\n');
     if (*head == NULL) {
-        center("Compte introuvable", cols);
+        center("Compte introuvable\n", cols);
+        fflush(stdout);
+        sleep(3);
         return;
     }
-    while (ptr -> id_account != id) {
+    while (ptr -> id_account != id && ptr -> next_account != NULL) {
         ptr = ptr -> next_account;
     }
     if (ptr -> id_account == id) {
@@ -589,7 +589,9 @@ void transfer(account **head) {
         actual_time(&(ptr -> date_op));
     }
     else {
-        center("Compte introuvable", cols);
+        center("Compte introuvable\n", cols);
+        fflush(stdout);
+        sleep(3);
         return;
     }
 }
@@ -624,7 +626,7 @@ void delete_account(account **head) {
 }
 
 
-//(A NE PAS INCLURE DANS LA PRESENTATION/RAPPORT)
+//
 void free_all(client **client_start, account **account_start) {
     client *ptr = *client_start;
     client *lastc = ptr;
